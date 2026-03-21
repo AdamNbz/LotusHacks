@@ -1,69 +1,161 @@
-# LotusHacks Website Project
+# LotusHacks - Automated Auto Insurance Claim System
 
-Chào mừng bạn đến với dự án website Hackathon của chúng tôi! Cấu trúc này được thiết kế để tối ưu hóa tốc độ phát triển và sự hợp tác linh hoạt trong môi trường Hackathon.
+Chào mừng bạn đến với dự án website Hackathon của chúng tôi! Hệ thống tự động hóa quy trình bồi thường bảo hiểm ô tô sử dụng AI Agents và RAG (Retrieval-Augmented Generation).
+
+Hệ thống giúp phân loại sự cố, kiểm tra điều kiện bồi thường sơ bộ, và hướng dẫn người dùng theo thời gian thực dựa trên hợp đồng bảo hiểm thực tế.
+
+## 🌟 Tính năng AI chính
+
+- **AI Triage Agent:** Phân loại sự cố tự động (Phức tạp/Đơn giản) dựa trên mức độ nghiêm trọng.
+- **AI Coverage Agent:** Đánh giá sơ bộ khả năng bồi thường dựa trên điều khoản bảo hiểm (RAG).
+- **RAG Vectorstore:** Lưu trữ và truy xuất các điều khoản bảo hiểm từ ChromaDB.
 
 ## 📁 Cấu trúc thư mục (Directory Structure)
 
 ```text
 LotusHacks/
-├── frontend/          # Mã nguồn website (Vite + React)
-├── backend/           # Mã nguồn máy chủ (Python/FastAPI)
-├── shared/            # Các loại (types), hằng số (constants) và tiện ích (utils) dùng chung
-├── docs/              # Tài liệu dự án, bài thuyết trình (pitch deck), hình ảnh/video demo
-├── scripts/           # Các tập lệnh tiện ích cho xử lý dữ liệu, triển khai (deployment)
-├── .gitignore         # Danh sách các tệp và thư mục bị bỏ qua bởi Git
-└── README.md          # Tệp hướng dẫn này
+├── backend/                  # FastAPI Backend (Auth + AI Agent)
+│   ├── app/
+│   │   ├── agent/            # AI Agent Module (Triage, Coverage, RAG)
+│   │   ├── auth/             # Authentication Module (JWT, Google OAuth)
+│   │   └── core/             # Cấu hình chung
+│   ├── tests/                # Unit tests cho Backend (Agent + Auth)
+│   └── Dockerfile            # Dockerfile cho Backend
+├── frontend/                 # React + Vite Frontend
+│   ├── src/
+│   │   ├── components/       # UI Components
+│   │   ├── pages/            # React Router Pages
+│   │   └── test/             # Unit tests cho Frontend
+│   └── Dockerfile            # Dockerfile cho Frontend (Nginx)
+├── docker-compose.yml        # Docker compose chạy toàn bộ stack
+├── run-tests.bat             # Script chạy tests trên Windows
+└── run-tests.sh              # Script chạy tests trên Linux/Mac
 ```
 
-## 🛠️ Công nghệ đề xuất (Proposed Tech Stack)
+## 🛠️ Công nghệ đề xuất (Tech Stack)
 
-- **Frontend:** [Vite](https://vitejs.dev/) + [React](https://react.dev/) + TypeScript, [Tailwind CSS](https://tailwindcss.com/), [shadcn/ui](https://ui.shadcn.com/) (Radix UI), React Router, TanStack Query.
-- **Backend:** [FastAPI](https://fastapi.tiangolo.com/) (Python), [Uvicorn](https://www.uvicorn.org/) (ASGI server).
+- **Frontend:** [Vite](https://vitejs.dev/) + [React](https://react.dev/) + TypeScript, Tailwind CSS, shadcn/ui.
+- **Backend:** [FastAPI](https://fastapi.tiangolo.com/) (Python), Uvicorn.
 - **Database:** [MongoDB](https://www.mongodb.com/) (NoSQL).
-- **AI/ML:** [OpenAI API](https://openai.com/api/), [LangChain](https://www.langchain.com/), [Hugging Face](https://huggingface.co/).
-- **Deployment:** [Vercel](https://vercel.com/) (Frontend/Next.js), [Railway](https://railway.app/) (Backend/DB).
-
-## 🚀 Bắt đầu (Getting Started)
-
-1. **Frontend:**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
-
-2. **Backend:**
-   ```bash
-   cd backend
-   conda create -n lotushacks-api python=3.11 -y
-   conda activate lotushacks-api
-   pip install -r requirements.txt
-   export MONGODB_URI="mongodb://localhost:27017"
-   export MONGODB_DB_NAME="lotushacks"
-   export JWT_SECRET="change-me"
-   export GOOGLE_CLIENT_ID="your-google-client-id"
-   uvicorn app.main:app --reload --port 8000
-   ```
-   *Swagger UI:* `http://localhost:8000/docs`  
-   *ReDoc:* `http://localhost:8000/redoc`
-
-## 🗄️ MongoDB setup
-
-```bash
-mongosh "mongodb://localhost:27017" database/mongo-init.js
-```
-
-3. **Cài đặt các công cụ khác:**
-   - Cài đặt [Prisma](https://www.prisma.io/) nếu bạn cần ORM.
-   - Cài đặt [Clerk](https://clerk.com/) hoặc [NextAuth.js](https://next-auth.js.org/) cho xác thực người dùng.
-
-## 📝 Ghi chú quan trọng (Important Notes)
-
-- Luôn cập nhật `.gitignore` để không đẩy các tệp chứa thông tin nhạy cảm (`.env`, `node_modules`, `venv`) lên GitHub.
-- Tập trung vào MVP (Minimum Viable Product) trước, sau đó mới thêm các tính năng bổ sung.
-- Sử dụng các thư viện UI sẵn có để tiết kiệm thời gian thiết kế giao diện.
+- **AI/ML:** OpenAI API, ChromaDB (Local Vectorstore), Sentence-Transformers.
+- **Testing:** Pytest (Backend), Vitest (Frontend).
+- **Deployment:** Docker & Docker Compose.
 
 ---
+
+## 🚀 Hướng dẫn chạy nhanh (Docker)
+
+Cách dễ nhất để chạy toàn bộ hệ thống là sử dụng Docker.
+
+### 1. Cấu hình môi trường:
+```bash
+cp .env.example .env
+```
+*Mở file `.env` và điền `OPENAI_API_KEY=sk-...`*
+
+### 2. Khởi động hệ thống:
+```bash
+docker-compose up --build
+```
+
+### 3. Truy cập:
+- **Frontend:** http://localhost:3000
+- **Backend API Docs:** http://localhost:3000/docs
+- **FastAPI Direct:** http://localhost:8000
+
+---
+
+## 💻 Hướng dẫn chạy Local (Không dùng Docker)
+
+### 1. Chạy Backend
+```bash
+cd backend
+cp .env.example .env      # Sửa OPENAI_API_KEY trong file .env
+
+python -m venv venv
+# Kích hoạt venv (Windows): venv\Scripts\activate
+# Kích hoạt venv (Mac/Linux): source venv/bin/activate
+
+pip install -r requirements.txt
+
+# Index dữ liệu RAG (Chỉ chạy lần đầu)
+python -m app.agent.rag.index_policies
+
+# Khởi động server
+python -m app.main
+```
+Backend sẽ chạy tại: http://localhost:8000
+
+### 2. Chạy Frontend
+Mở terminal mới:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Frontend sẽ chạy tại: http://localhost:8080
+
+---
+
+## 🧪 Hướng dẫn chạy Unit Tests
+
+Dự án đi kèm với hệ thống Unit Tests toàn diện cho cả Backend (pytest) và Frontend (vitest).
+
+### Chạy trên Windows:
+Mở PowerShell hoặc CMD tại thư mục gốc và chạy:
+```cmd
+.\run-tests.bat
+# Hoặc: .\run-tests.ps1
+```
+
+### Chạy trên Linux/Mac:
+Mở terminal tại thư mục gốc và chạy:
+```bash
+bash run-tests.sh
+```
+
+---
+
+## 🧹 Hướng dẫn xóa sạch (Clean up)
+
+Nếu bạn muốn xóa toàn bộ hệ thống để làm lại từ đầu (bao gồm xóa database, ChromaDB, venv, node_modules):
+
+### Nếu dùng Docker:
+```bash
+docker-compose down -v --rmi all
+```
+
+### Nếu chạy Local:
+**Trên Windows:**
+```cmd
+# Xóa backend venv & ChromaDB
+cd backend
+rmdir /s /q venv
+rmdir /s /q app\agent\data\chroma_db
+
+# Xóa frontend node_modules
+cd ..\frontend
+rmdir /s /q node_modules
+```
+
+**Trên Mac/Linux:**
+```bash
+# Xóa backend venv & ChromaDB
+cd backend
+rm -rf venv
+rm -rf app/agent/data/chroma_db
+
+# Xóa frontend node_modules
+cd ../frontend
+rm -rf node_modules
+```
+
+---
+
+## 📚 Tài liệu chi tiết
+
+Để hiểu rõ hơn về kiến trúc AI và cách hoạt động của các Agents, vui lòng xem file [AI_SERVICES.md](AI_SERVICES.md).
+
 ## 👥 Thành viên nhóm (Team Members)
 
 - Đinh Việt Phát - Project Manager
