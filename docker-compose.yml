@@ -1,0 +1,109 @@
+version: "3.9"
+
+# ============================================================
+# Docker Compose - LotusHacks Full Stack
+# Services: backend-agent, mongo, frontend (optional)
+# ============================================================
+
+services:
+
+  # ----------------------------------------------------------
+  # AI Agent Backend (FastAPI + RAG)
+  # ----------------------------------------------------------
+  backend-agent:
+    build:
+      context: ./backend/agent
+      dockerfile: Dockerfile
+    container_name: lotushacks-backend-agent
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # LLM API Keys - điền vào .env hoặc truyền trực tiếp
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - QWEN_API_KEY=${QWEN_API_KEY:-}
+      # Agent Config
+      - AGENT_LLM_MODEL=${AGENT_LLM_MODEL:-gpt-4o-mini}
+      - AGENT_LLM_TEMPERATURE=${AGENT_LLM_TEMPERATURE:-0}
+      # Database
+      - MONGODB_URI=mongodb://mongo:27017
+      - MONGODB_DB_NAME=${MONGODB_DB_NAME:-lotushacks}
+      # JWT
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - JWT_ALGORITHM=${JWT_ALGORITHM:-HS256}
+      - JWT_EXPIRES_MINUTES=${JWT_EXPIRES_MINUTES:-10080}
+      # Google OAuth
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      # CORS
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+    volumes:
+      # Persist ChromaDB data between restarts
+      - chroma_data:/app/app/data/chroma_db
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - lotushacks-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # ----------------------------------------------------------
+  # MongoDB - Database for Auth & User data
+  # ----------------------------------------------------------
+  mongo:
+    image: mongo:7.0
+    container_name: lotushacks-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+      - ./database/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGODB_DB_NAME:-lotushacks}
+    networks:
+      - lotushacks-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ----------------------------------------------------------
+  # Frontend (React + Vite) - Optional, comment out nếu dev local
+  # ----------------------------------------------------------
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: lotushacks-frontend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - VITE_API_URL=http://localhost:8000
+  #   depends_on:
+  #     - backend-agent
+  #   networks:
+  #     - lotushacks-net
+
+# ----------------------------------------------------------
+# Volumes
+# ----------------------------------------------------------
+volumes:
+  mongo_data:
+    driver: local
+  chroma_data:
+    driver: local
+
+# ----------------------------------------------------------
+# Networks
+# ----------------------------------------------------------
+networks:
+  lotushacks-net:
+    driver: bridge

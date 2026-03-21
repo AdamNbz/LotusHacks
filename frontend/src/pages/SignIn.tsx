@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
-import { api } from "@/lib/api";
 
 export default function SignIn() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -15,36 +14,23 @@ export default function SignIn() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const { setAuth } = useAuth();
+  const { signIn } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    try {
-      const resp = isSignUp
-        ? await api.auth.signup({ email, full_name: name, password })
-        : await api.auth.signin({ email, password });
-
-      setAuth({
-        accessToken: resp.access_token,
-        user: {
-          id: resp.user.id,
-          name: resp.user.full_name || resp.user.email.split("@")[0],
-          email: resp.user.email,
-          avatar: resp.user.avatar_url ?? undefined,
-        },
-      });
+    setTimeout(() => {
+      signIn({ name: isSignUp ? name : email.split("@")[0], email });
       setLoading(false);
       navigate("/");
-    } catch {
-      setLoading(false);
-    }
+    }, 1000);
   };
 
   const handleGoogleSignIn = () => {
-    setLoading(false);
+    signIn({ name: "VETC User", email: "user@vetc.com" });
+    navigate("/");
   };
 
   return (

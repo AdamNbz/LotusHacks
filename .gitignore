@@ -46,3 +46,4 @@ out/
 build/
 dist/
 .next/
+get-docker.sh
